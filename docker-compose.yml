@@ -25,6 +25,15 @@ services:
         depends_on: 
             - es
 
+    hq:
+        image: elastichq/elasticsearch-hq
+        environment:
+            HQ_DEFAULT_URL: "http://es:9200"
+        ports: 
+            - 5000:5000
+        depends_on: 
+            - es
+
 volumes: 
     esdata:
         driver: local
