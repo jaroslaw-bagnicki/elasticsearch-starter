@@ -1,0 +1,13 @@
+{
+  "name": "es-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jarosław Bagnicki",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
