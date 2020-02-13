@@ -1,6 +1,18 @@
 version: '3'
 services:
 
+    es-client:
+        build: ./es-client
+        volumes: 
+            - ./es-client:/usr/src/app
+        ports: 
+            - 3001:3000
+            - 9229:9229
+        depends_on: 
+            - es
+        networks: 
+            - esnet
+
     es:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
         environment:
