@@ -22,3 +22,12 @@ stop:
 
 down: 
 	@$(DC) down
+
+npm-install-elastic-client:
+	@npm install --silent --no-save @elastic/elasticsearch
+
+seed-series: npm-install-elastic-client
+	@node scripts/seedSeries.js 
+
+seed-movies:
+	@node scripts/seedMovies.js 
