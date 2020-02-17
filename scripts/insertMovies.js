@@ -4,7 +4,7 @@ const path = require('path');
 
 try {
     console.log('Reading movies.json...');
-    const moviesPath = path.join(__dirname, '../raw-data/movies.json');
+    const moviesPath = path.join(__dirname, '../raw-data/movies.data.json');
 
     const movies = fs.readFileSync(moviesPath, { encoding: 'utf-8' });
     console.log('Movies loaded.');

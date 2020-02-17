@@ -1,37 +1,46 @@
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { Client } = require('@elastic/elasticsearch')
 
-try {
-    console.log('Reading series.json...');
-    // const moviesPath = path.resolve('raw-data/movies.json');
-    const moviesPath = path.join(__dirname, '../raw-data/series.json');
+const ES_HOST = process.env.ES_HOST || 'localhost'
+const ES_PORT = process.env.ES_PORT || 9200
 
-    const movies = fs.readFileSync(moviesPath, { encoding: 'utf-8' });
-    console.log('Series loaded.');
+const client = new Client({ node: `http://${ES_HOST}:${ES_PORT}` })
 
-    console.log('Preparing request.');
-    const ELASTICSEARCH_URL = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
-    const url = new URL('./_bulk?pretty', ELASTICSEARCH_URL);
-    
-    const req = http.request(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    }, res => {
-        console.log(`statusCode: ${res.statusCode}`);
-        res.on('data', data => {
-            process.stdout.write(data);
+const insertSeries = async () => {
+    const indexConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../raw-data/series.config.json'), { encoding: 'utf-8' }));
+    const series = fs.readFileSync(path.join(__dirname, '../raw-data/series.data.json'), { encoding: 'utf-8' });
+
+
+    const isIndexExists = (await client.indices.exists({
+        index: 'series',
+    })).body;
+
+    if (isIndexExists) {
+        console.warn('Index "series" already exists!')
+    } else {
+        const res = await client.indices.create({
+            index: 'series',
+            body: indexConfig,
         });
+        console.log('Index "series" was created.');
+    }
+
+    const res = await client.bulk({
+        index: 'series',
+        body: series,
     });
-    
-    req.write(movies);
-    req.end();
-    console.log('Sending request...');
 
+    if (res.body.errors) {
+        console.warn('"series" data was inserted with errors!');
+        console.log(JSON.stringify(res.body, null, 2));
+    } else {
+        console.log('"series" data was proper inserted.');
+    }
+} 
 
-} catch (err) {
-    console.error(err);
-}
+insertSeries()
+    .catch(err => {
+        console.error(err);
+    });
 
