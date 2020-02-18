@@ -1,38 +1,43 @@
-#!/usr/bin/env node
-
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { Client } = require('@elastic/elasticsearch');
 
-try {
-    console.log('Reading movies.json...');
-    const moviesPath = path.join(__dirname, '../raw-data/movies.data.json');
+(async () => {
+    const ES_HOST = process.env.ES_HOST || 'localhost';
+    const ES_PORT = process.env.ES_PORT || 9200;
 
-    const movies = fs.readFileSync(moviesPath, { encoding: 'utf-8' });
-    console.log('Movies loaded.');
+    const INDEX_NAME = 'movies';
 
-    console.log('Preparing request.');
-    const ELASTICSEARCH_URL = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
-    const url = new URL('./_bulk?pretty', ELASTICSEARCH_URL);
-    
-    const req = http.request(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    }, res => {
-        console.log(`statusCode: ${res.statusCode}`);
-        res.on('data', data => {
-            process.stdout.write(data);
+    const client = new Client({ node: `http://${ES_HOST}:${ES_PORT}` });
+    const indexConfig = JSON.parse(fs.readFileSync(path.join(__dirname, `../raw-data/${INDEX_NAME}.config.json`), { encoding: 'utf-8' }));
+    const series = fs.readFileSync(path.join(__dirname, `../raw-data/${INDEX_NAME}.data.json`), { encoding: 'utf-8' });
+
+    const isIndexExists = (await client.indices.exists({
+        index: INDEX_NAME,
+    })).body;
+
+    if (isIndexExists) {
+        console.warn(`Index "${INDEX_NAME}" already exists!`)
+    } else {
+        const res = await client.indices.create({
+            index: INDEX_NAME,
+            body: indexConfig,
         });
+        console.log(`Index "${INDEX_NAME}" was created.`);
+    }
+
+    const res = await client.bulk({
+        index: INDEX_NAME,
+        body: series,
     });
-    
-    req.write(movies);
-    req.end();
-    console.log('Sending request...');
 
-
-} catch (err) {
-    console.error(err);
-}
-
+    if (res.body.errors) {
+        console.warn(`"${INDEX_NAME}" data was inserted with errors!`);
+        console.log(JSON.stringify(res.body, null, 2));
+    } else {
+        console.log(`"${INDEX_NAME}" data was proper inserted.`);
+    }
+})()
+    .catch(err => {
+        console.error(err);
+    });

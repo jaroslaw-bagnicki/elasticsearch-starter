@@ -29,5 +29,5 @@ npm-install-elastic-client:
 seed-series: npm-install-elastic-client
 	@node scripts/seedSeries.js 
 
-seed-movies:
+seed-movies: npm-install-elastic-client
 	@node scripts/seedMovies.js 
