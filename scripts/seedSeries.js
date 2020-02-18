@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
 const { Client } = require('@elastic/elasticsearch')
@@ -5,9 +7,9 @@ const { Client } = require('@elastic/elasticsearch')
 const ES_HOST = process.env.ES_HOST || 'localhost'
 const ES_PORT = process.env.ES_PORT || 9200
 
-const client = new Client({ node: `http://${ES_HOST}:${ES_PORT}` })
+const client = new Client({ node: `http://${ES_HOST}:${ES_PORT}` });
 
-const insertSeries = async () => {
+(async () => {
     const indexConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '../raw-data/series.config.json'), { encoding: 'utf-8' }));
     const series = fs.readFileSync(path.join(__dirname, '../raw-data/series.data.json'), { encoding: 'utf-8' });
 
@@ -37,10 +39,7 @@ const insertSeries = async () => {
     } else {
         console.log('"series" data was proper inserted.');
     }
-} 
-
-insertSeries()
+})()
     .catch(err => {
         console.error(err);
     });
-
