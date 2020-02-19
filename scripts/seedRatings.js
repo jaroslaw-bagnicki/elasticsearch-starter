@@ -72,10 +72,9 @@ const marks = {
 
     performance.mark(marks.PARSE_START);
     const ratingsParsed = parseCsv(ratingsCsv, { columns: true });
-    const ratingsBulk = ratingsParsed.reduce((acc, curr) => {
-        const actionRow = `{ "create" : { "_index": "${INDEX_NAME}" } }`;
-        return acc + actionRow + '\n' + JSON.stringify(curr) + '\n';
-    }, '');
+    const ratingsBulk = ratingsParsed.flatMap(rating => [
+        { create: { _index: INDEX_NAME } }, rating,
+    ]);
     performance.mark(marks.PARSE_END);
     performance.measure('parse', marks.PARSE_START, marks.PARSE_END);
 
