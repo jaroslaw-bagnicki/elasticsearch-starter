@@ -26,8 +26,14 @@ down:
 npm-install-elastic-client:
 	@npm install --silent --no-save @elastic/elasticsearch
 
+npm-install-cvs-parse:
+	@npm install --silent --no-save csv-parse
+
 seed-series: npm-install-elastic-client
 	@node scripts/seedSeries.js 
 
 seed-movies: npm-install-elastic-client
 	@node scripts/seedMovies.js 
+
+seed-ratings: npm-install-elastic-client npm-install-cvs-parse
+	@node scripts/seedRatings.js

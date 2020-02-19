@@ -10,7 +10,7 @@ const { Client } = require('@elastic/elasticsearch');
 
     const client = new Client({ node: `http://${ES_HOST}:${ES_PORT}` });
     const indexConfig = JSON.parse(fs.readFileSync(path.join(__dirname, `../raw-data/${INDEX_NAME}.config.json`), { encoding: 'utf-8' }));
-    const series = fs.readFileSync(path.join(__dirname, `../raw-data/${INDEX_NAME}.data.json`), { encoding: 'utf-8' });
+    const series = fs.readFileSync(path.join(__dirname, `../raw-data/movies.data.ndjson`), { encoding: 'utf-8' });
 
     const isIndexExists = (await client.indices.exists({
         index: INDEX_NAME,
